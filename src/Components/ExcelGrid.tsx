@@ -132,10 +132,18 @@ const VirtualizedExcelSheet: React.FC = () => {
         newCells.set(key, cellData);
       }
 
-      if (value.startsWith("=")) {
+      let changed = true;
+      while (changed) {
+        changed = false;
         newCells.forEach((cell) => {
           if (cell.formula) {
-            cell.computed = evaluateFormula(cell.formula, newCells);
+            const prevComputed = cell.computed;
+
+            const computed = evaluateFormula(cell.formula, newCells);
+            if (computed !== prevComputed) {
+              cell.computed = computed;
+              changed = true;
+            }
           }
         });
       }
@@ -338,10 +346,6 @@ const VirtualizedExcelSheet: React.FC = () => {
               { length: visibleRange.endRow - visibleRange.startRow },
               (_, i) => {
                 const row = visibleRange.startRow + i;
-                console.log({
-                  rowlength: visibleRange.endRow - visibleRange.startRow,
-                  collength: visibleRange.endCol - visibleRange.startCol,
-                });
                 return Array.from(
                   { length: visibleRange.endCol - visibleRange.startCol },
                   (_, j) => {
