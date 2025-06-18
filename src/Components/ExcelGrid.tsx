@@ -6,6 +6,7 @@ import React, {
   useEffect,
 } from "react";
 import { cn } from "../lib/utils";
+import useWindowDimensions from "../hooks/useWindowDimensions";
 
 interface CellData {
   value: string;
@@ -22,8 +23,6 @@ const CELL_WIDTH = 100;
 const CELL_HEIGHT = 30;
 const HEADER_HEIGHT = 30;
 const ROW_HEADER_WIDTH = 60;
-const VISIBLE_ROWS = 25;
-const VISIBLE_COLS = 12;
 const TOTAL_ROWS = 10000;
 const TOTAL_COLS = 10000;
 
@@ -91,14 +90,20 @@ const VirtualizedExcelSheet: React.FC = () => {
 
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { height, width } = useWindowDimensions();
 
   const visibleRange = useMemo(() => {
     const startRow = Math.floor(scrollTop / CELL_HEIGHT);
-    const endRow = Math.min(startRow + VISIBLE_ROWS + 2, TOTAL_ROWS);
+    const endRow = Math.min(
+      startRow + Math.floor(height / CELL_HEIGHT) + 2,
+      TOTAL_ROWS
+    );
     const startCol = Math.floor(scrollLeft / CELL_WIDTH);
-    const endCol = Math.min(startCol + VISIBLE_COLS + 2, TOTAL_COLS);
+    const endCol = Math.min(
+      startCol + Math.floor(width / CELL_WIDTH) + 2,
+      TOTAL_COLS
+    );
     const rowLength = endRow - startRow;
-
     return { rowLength, startRow, endRow, startCol, endCol };
   }, [scrollTop, scrollLeft]);
 
@@ -333,6 +338,10 @@ const VirtualizedExcelSheet: React.FC = () => {
               { length: visibleRange.endRow - visibleRange.startRow },
               (_, i) => {
                 const row = visibleRange.startRow + i;
+                console.log({
+                  rowlength: visibleRange.endRow - visibleRange.startRow,
+                  collength: visibleRange.endCol - visibleRange.startCol,
+                });
                 return Array.from(
                   { length: visibleRange.endCol - visibleRange.startCol },
                   (_, j) => {
